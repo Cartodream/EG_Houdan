@@ -198,7 +198,7 @@
       background: var(--gold-d); padding: .85rem 1.2rem;
       font-style: italic; line-height: 1.75; font-size: .92rem;
       margin-bottom: 1.5rem; text-align: left; width: 100%;
-      white-space: pre-line;
+      white-space: pre-line; overflow-y: auto; max-height: 40vh;
     }
     /* ─── CRYPTEX ─────────────────────────────────────── */
     .cryptex-wrap {
@@ -484,6 +484,9 @@
       border-radius: 2px;
       background-repeat: no-repeat;
       transition: opacity .1s;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
     }
     .puzzle-cell:hover:not(.empty) { opacity: .82; }
     .puzzle-cell.empty {
@@ -536,14 +539,15 @@
     /* ─── STEP SUCCESS ───────────────────────────────── */
     #step-success {
       position:fixed; inset:0; z-index:90; display:none;
-      align-items:center; justify-content:center; padding:1.5rem;
+      align-items:flex-start; justify-content:center;
+      padding:1.5rem; overflow-y:auto;
       background:rgba(7,7,14,.94);
     }
     #step-success.show { display:flex; }
     .ss-card {
       max-width:560px; width:100%; background:var(--surface); border:1px solid var(--gold);
       box-shadow:0 0 70px rgba(201,162,39,.24); padding:1.7rem 1.6rem; text-align:center;
-      cursor:pointer;
+      cursor:pointer; margin:auto; /* centre verticalement si assez de place */
     }
     .ss-icon { font-size:2rem; color:var(--ok); margin-bottom:.7rem; }
     .ss-card h3 { color:var(--gold); font-size:1.2rem; letter-spacing:.16em; text-transform:uppercase; margin-bottom:.8rem; }
@@ -622,19 +626,46 @@
       .cm-clue  {
         font-size: .82rem; line-height: 1.6;
         padding: .6rem .85rem; margin-bottom: .75rem;
-        max-height: 26vh; overflow-y: auto;
+        max-height: 22vh; overflow-y: auto;
       }
       .cm-error { font-size: .74rem; margin-top: .35rem; }
-      .cx-ring { width: 36px; }
-      .cx-l-0  { font-size: 1.2rem; padding: 5px 0; }
-      .cx-l-1  { font-size: .75rem; }
-      .cx-l-2  { font-size: .52rem; }
-      .cx-endcap { width: 14px; }
+
+      /* Cryptex mobile */
+      .cx-ring     { width: 36px; }
+      .cx-ring-btn { min-height: 44px; padding: 10px 0; font-size: .9rem; }
+      .cx-l-0      { font-size: 1.2rem; padding: 5px 0; }
+      .cx-l-1      { font-size: .75rem; }
+      .cx-l-2      { font-size: .52rem; }
+      .cx-endcap   { width: 14px; }
+      #cx-validate { padding: .55rem 2rem; font-size: .8rem; }
+
+      /* T9 mobile */
+      #t9-modal {
+        justify-content: flex-start;
+        padding: .6rem .4rem .3rem;
+        overflow-y: auto;
+        gap: .5rem;
+      }
+      #t9-timer    { font-size: .9rem; }
+      .t9-phone    { width: 94vw; max-width: 320px; padding: 12px 10px 16px; }
+      .t9-screen   { min-height: 52px; font-size: 1.45rem; letter-spacing: .15em; margin-bottom: 10px; }
+      .t9-keys     { gap: 5px; }
+      .t9-key      { padding: 12px 4px 10px; min-height: 52px; border-radius: 8px; }
+      .t9-num      { font-size: 1rem; }
+      .t9-abc      { font-size: .48rem; }
+
+      /* Puzzle modal mobile */
+      #puzzle-modal {
+        padding: .6rem .4rem .3rem;
+        justify-content: flex-start;
+        overflow-y: auto;
+      }
+      #pm-timer { font-size: .9rem; }
 
       /* Popup indice — remonte depuis le bas */
       #clue-popup {
         top: auto; left: 0; right: 0; bottom: 0;
-        width: 100%; max-height: 62vh;
+        width: 100%; max-height: 50vh;
         transform: translateY(0);
         border-radius: 16px 16px 0 0;
         box-shadow: 0 -6px 40px rgba(0,0,0,.8);
@@ -642,16 +673,14 @@
       }
       #clue-popup.hidden { transform: translateY(106%); opacity: 0; }
 
-      /* Bouton revoir indice */
-      #clue-toggle { bottom: 10px; left: 10px; padding: 11px 16px; font-size: .8rem; }
-
-      /* Bouton indice viewport */
-      #vp-hint-btn { bottom: 10px; right: 10px; padding: 11px 16px; font-size: .8rem; }
+      /* Boutons flottants — zone de touch plus grande */
+      #clue-toggle { bottom: 14px; left: 12px; padding: 13px 18px; font-size: .8rem; }
+      #vp-hint-btn { bottom: 14px; right: 12px; padding: 13px 18px; font-size: .8rem; }
 
       /* Hint popup — remonte depuis le bas */
       #hint-popup {
         top: auto; left: 0; right: 0; bottom: 0;
-        width: 100%; max-height: 62vh;
+        width: 100%; max-height: 50vh;
         transform: translateY(0);
         border-radius: 16px 16px 0 0;
         box-shadow: 0 -6px 40px rgba(0,0,0,.8);
@@ -992,6 +1021,7 @@ function onMouseUp(e) {
 function onTouchStart(e) {
   if (won) return;
   if (e.target.closest && e.target.closest('button')) return;
+  if (e.touches.length > 1) { isDrag = false; return; } // laisser le pinch-to-zoom natif
   cancelAnimationFrame(rafId);
   const t = e.touches[0];
   isDrag = true; didDrag = false;
@@ -1000,6 +1030,7 @@ function onTouchStart(e) {
 }
 function onTouchMove(e) {
   if (!isDrag) return;
+  if (e.touches.length > 1) { isDrag = false; return; } // pinch en cours, ne pas interférer
   e.preventDefault();
   const t = e.touches[0];
   const dx = t.clientX - lastMoveX;
@@ -1173,6 +1204,7 @@ function renderPuzzleBoard() {
       cell.style.backgroundPosition = `-${pc * puzzleCellW}px -${pr * puzzleCellH}px`;
     }
     cell.addEventListener('click', () => onPuzzleClick(i));
+    cell.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); onPuzzleClick(i); }, { passive: false });
     board.appendChild(cell);
   }
 }
