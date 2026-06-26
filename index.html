@@ -129,6 +129,7 @@
     #pano-vp {
       flex: 1; position: relative; overflow: hidden;
       cursor: grab; user-select: none; -webkit-user-select: none;
+      touch-action: pinch-zoom;
     }
     #pano-vp.dragging { cursor: grabbing; }
 
@@ -671,7 +672,7 @@
         box-shadow: 0 -6px 40px rgba(0,0,0,.8);
         overflow-y: auto;
       }
-      #clue-popup.hidden { transform: translateY(106%); opacity: 0; }
+      #clue-popup.hidden { transform: translateY(106%); opacity: 0; pointer-events: none; }
 
       /* Boutons flottants — zone de touch plus grande */
       #clue-toggle { bottom: 14px; left: 12px; padding: 13px 18px; font-size: .8rem; }
@@ -686,7 +687,7 @@
         box-shadow: 0 -6px 40px rgba(0,0,0,.8);
         overflow-y: auto;
       }
-      #hint-popup.hidden { transform: translateY(106%); opacity: 0; }
+      #hint-popup.hidden { transform: translateY(106%); opacity: 0; pointer-events: none; }
 
       /* Victoire / Game Over */
       #victory h2, #game-over h2 { font-size: 1.8rem; }
@@ -916,6 +917,7 @@ let panVel        = 0;
 let rafId         = null;
 let isDrag        = false;
 let didDrag       = false;
+let hadPinch      = false;
 let dragStartX    = 0;
 let dragStartPan  = 0;
 let lastMoveX     = 0;
@@ -1021,7 +1023,8 @@ function onMouseUp(e) {
 function onTouchStart(e) {
   if (won) return;
   if (e.target.closest && e.target.closest('button')) return;
-  if (e.touches.length > 1) { isDrag = false; return; } // laisser le pinch-to-zoom natif
+  if (e.touches.length > 1) { isDrag = false; hadPinch = true; return; }
+  hadPinch = false;
   cancelAnimationFrame(rafId);
   const t = e.touches[0];
   isDrag = true; didDrag = false;
@@ -1030,7 +1033,7 @@ function onTouchStart(e) {
 }
 function onTouchMove(e) {
   if (!isDrag) return;
-  if (e.touches.length > 1) { isDrag = false; return; } // pinch en cours, ne pas interférer
+  if (e.touches.length > 1) { isDrag = false; hadPinch = true; return; }
   e.preventDefault();
   const t = e.touches[0];
   const dx = t.clientX - lastMoveX;
@@ -1043,6 +1046,7 @@ function onTouchMove(e) {
 function onTouchEnd(e) {
   if (!isDrag) return;
   isDrag = false;
+  if (hadPinch) { hadPinch = false; return; }
   if (didDrag) { startInertia(); } else {
     const t = e.changedTouches[0];
     handleClick({ clientX: t.clientX, clientY: t.clientY });
@@ -1055,6 +1059,7 @@ function onTouchEnd(e) {
 function handleClick(e) {
   const step = STEPS[curStep];
   if (won || timerPaused || !step || step.type !== 'click') return;
+  if (!document.getElementById('clue-popup').classList.contains('hidden')) return;
 
   const rect = getVP().getBoundingClientRect();
   const { px, py } = screenToPano(e.clientX - rect.left, e.clientY - rect.top);
@@ -1386,6 +1391,7 @@ function attachRingInput(ring, i) {
   // Touch swipe vertical
   let ty0 = null, tyL = null;
   ring.addEventListener('touchstart', e => {
+    if (e.target.closest('button')) return; // laisser les boutons ▲▼ fonctionner
     ty0 = tyL = e.touches[0].clientY;
     e.preventDefault();
   }, { passive: false });
