@@ -1,7 +1,7 @@
 {
   "title": "A la recherche de la plume d'Or",
   "subtitle": "Chasse au Trésor dans le charmant village d'Houdan",
-  "intro": "Bonjour toi ! Bienvenu à la chasse au trésor !\n\nIl y a des années, un vieil homme d'Houdan a caché une plume d'or dans Houdan et a dit à qui voulait l'entendre \"personne ne trouvera le trésor\" ! Depuis, des milieurs de personnes ont essayés mais personne n'a réussit. Tu veux essayer ?\n\nIl a parsemé des indices partout dans la ville. Fais vite ! De nombreux chasseurs de trésors sont après cette plume.",
+  "intro": "Bonjour toi ! Bienvenu à la chasse au trésor !\n\nIl y a des années, un vieil homme du coin a caché une plume d'or dans Houdan, et a dit, à qui voulait l'entendre, \"personne ne trouvera le trésor\" ! Depuis, des milieurs de personnes ont essayés mais personne n'a réussit.\n\nIl a parsemé des indices partout dans la ville. Fais vite ! De nombreux chasseurs de trésors sont après cette plume.",
   "duration": 15,
   "victoryMessage": "",
   "steps": [
