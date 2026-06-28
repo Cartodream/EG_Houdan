@@ -13,6 +13,17 @@
       "code": "DONJON"
     },
     {
+      "type": "t9",
+      "clue": "test",
+      "success": "",
+      "code": "TEST",
+      "item": {
+        "name": "Code Morse",
+        "text": "Test",
+        "image": "morsecode-1.webp"
+      }
+    },
+    {
       "type": "click",
       "clue": "Le Seigneur, meilleur archer de la région, avait une pièce favorite lorsque le château était assiégé. \n\nTrouve cet emplacement.",
       "success": "Bravo ! Les meurtrières étaient de petites ouvertures permettant de tirer à l'arc tout en étant en sécurité. \nVous trouvez un message dans une niche : \n\n\"Ainsi vous avez découvet ma première cachette. La seconde enigme au dos de parchemin vous emmenera à un autre endroit que j'apprécie à Houdan\".",
@@ -77,7 +88,7 @@
       "clue": "Ceinture minérale d'une cité, je suis l'ultime parole de pierre entre la ville et l'assaut. On ne m'érige plus, mais l'on me longe encore. Mon nom ?",
       "success": "Bien joué ! Direction les remparts d'Houdan !",
       "hint": "entoure généralement une ville médiévale",
-      "code": "777336727778"
+      "code": "REMPARTS"
     },
     {
       "type": "click",
